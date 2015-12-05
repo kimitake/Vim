@@ -26,7 +26,7 @@ export default class NormalMode extends Mode {
 		"dd" : () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
 		"dw" : () => { return vscode.commands.executeCommand("deleteWordRight"); },
 		"db" : () => { return vscode.commands.executeCommand("deleteWordLeft"); },
-		 "x" : () => { this.CommandDelete(1); }
+		"x" : () => { return this.CommandDelete(1); },
 		"esc": () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
 	};
 
@@ -67,14 +67,18 @@ export default class NormalMode extends Mode {
 		});
 	}
 
-    private CommandDelete(n: number) : void {
+    private CommandDelete(n: number) : Thenable<{}> {
         let pos = this.caret.position;
         let end = pos.translate(0, n);
         let range : vscode.Range = new vscode.Range(pos, end);
-        TextEditor.delete(range).then(() => {
-			if (this.caret.isOutOfRange(this.caret.position)) {
-				this.caret.lineEnd().move();
-			}
+        return new Promise(resolve => {
+			TextEditor.delete(range).then(() => {
+				if (this.caret.isOutOfRange(this.caret.position)) {
+					this.caret.lineEnd().move();
+				}
+			});
+
+			resolve();
 		});
     }
 }
