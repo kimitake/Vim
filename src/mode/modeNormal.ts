@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import {ModeName, Mode} from './mode';
 import {showCmdLine} from './../cmd_line/main';
 import {Caret} from './../motion/motion';
+import TextEditor from './../textEditor';
 
 export default class NormalMode extends Mode {
 	private caret : Caret;
@@ -25,7 +26,7 @@ export default class NormalMode extends Mode {
 		"dd" : () => { return vscode.commands.executeCommand("editor.action.deleteLines"); },
 		"dw" : () => { return vscode.commands.executeCommand("deleteWordRight"); },
 		"db" : () => { return vscode.commands.executeCommand("deleteWordLeft"); },
-		// "x" : () => { this.CommandDelete(1); }
+		 "x" : () => { this.CommandDelete(1); }
 		"esc": () => { return vscode.commands.executeCommand("workbench.action.closeMessages"); }
 	};
 
@@ -66,18 +67,14 @@ export default class NormalMode extends Mode {
 		});
 	}
 
-/*
     private CommandDelete(n: number) : void {
-        let pos = Caret.currentPosition();
+        let pos = this.caret.position;
         let end = pos.translate(0, n);
         let range : vscode.Range = new vscode.Range(pos, end);
-        TextEditor.delete(range).then(function() {
-			let lineEnd = Caret.lineEnd();
-
-			if (pos.character === lineEnd.character + 1) {
-				Caret.move(Caret.left());
+        TextEditor.delete(range).then(() => {
+			if (this.caret.isOutOfRange(this.caret.position)) {
+				this.caret.lineEnd().move();
 			}
 		});
     }
-*/
 }

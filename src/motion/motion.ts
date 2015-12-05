@@ -159,14 +159,26 @@ abstract class Motion<T extends Motion<any>> {
 		return position.character === 0;
 	}
 
-	private isLineEnd(position : vscode.Position) : boolean {
-		let lineEndCharacter  = this.maxLineLength(position.line);
-
-		if (position.character > lineEndCharacter) {
+	public isLineEnd(position : vscode.Position) : boolean {
+		let lineEnd  = this.maxLineLength(position.line);
+		if (this.isOutOfRange(position)) {
 			throw new RangeError;
 		}
 
-		return position.character === lineEndCharacter;
+		return position.character === lineEnd;
+	}
+	
+	public isOutOfRange(position : vscode.Position) : boolean {
+		let lineEnd  = this.maxLineLength(position.line);
+		if (lineEnd < 0) {
+			lineEnd = 0;
+		}
+
+		if (position.character > lineEnd) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private getLineEnd() : vscode.Position {
