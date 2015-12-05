@@ -49,11 +49,29 @@ export default class InsertMode extends Mode {
     HandleKeyEvent(key : string) : Thenable<{}> {
         this.keyHistory.push(key);
 
-        return TextEditor
-                .insert(this.ResolveKeyValue(key))
-                .then(() => {
-                    return vscode.commands.executeCommand("editor.action.triggerSuggest");
-                });
+        TextEditor.insert(this.ResolveKeyValue(key))
+            .then(() => {
+				let reg = new RegExp("[a-zA-Z]");
+				if (reg.test(key)) {
+					let cursor = new Cursor();
+					let pos = cursor.reset().position;
+					let text = TextEditor.readLine(pos.line);
+					if (text.length > 0) {
+					   let c = text[pos.character - 1];
+					   if (c !== undefined && reg.test(c)) {
+						   vscode.commands.executeCommand("editor.action.triggerSuggest");
+						   return true;
+					   }
+					}
+				}
+				vscode.commands.executeCommand("hideSuggestWidget");
+				return true;
+			}, function() {
+				vscode.commands.executeCommand("hideSuggestWidget");
+				return false;
+			});
+
+        return;
     }
 
     // Some keys have names that are different to their value.
@@ -62,6 +80,9 @@ export default class InsertMode extends Mode {
         switch (key) {
             case 'space':
                 return ' ';
+            case 'backspace':
+                vscode.commands.executeCommand("deleteLeft");
+                return '';
             default:
                 return key;
         }
